@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netflix 2025 — Lo más visto del mundo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --r:#E50914;
+  --bg:#ffffff;
+  --bg2:#f4f4f4;
+  --text:#111111;
+  --text2:#444444;
+  --text3:#888888;
+  --card:rgba(255,255,255,.9);
+  --card-border:rgba(0,0,0,.09);
+  --c:#00CFFF;
+  --g:#F5C518;
+  --gr:#22C55E;
+  --p:#A78BFA;
+  --sp:#FF6B35;
+}
+body.dark{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --text:#f0f0f0;
+  --text2:#bbbbbb;
+  --text3:#777777;
+  --card:rgba(20,20,20,.9);
+  --card-border:rgba(255,255,255,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}::-webkit-scrollbar-thumb:hover{background:var(--r)}
+.bbs{font-family:'Bebas Neue',sans-serif;letter-spacing:.03em}
+.lbl{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.32em;text-transform:uppercase;color:var(--r);margin-bottom:.75rem}
+.lbl.c{color:var(--c)}.lbl.g{color:var(--g)}.lbl.gr{color:var(--gr)}.lbl.sp{color:var(--sp)}
+.sh{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,7vw,6.5rem);line-height:1}
+.bt{font-size:clamp(.95rem,1.35vw,1.08rem);color:var(--text2);line-height:1.85}.bt strong{color:var(--text);font-weight:700}
+.w{max-width:1400px;margin:0 auto;padding:6rem 2.5rem}.w.n{max-width:840px}.w.wide{max-width:1600px}
+.gl{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 2px 24px rgba(0,0,0,.07)}
+.ins{border-left:2px solid var(--r);padding:.85rem 1.3rem;background:rgba(229,9,20,.05);border-radius:0 8px 8px 0;margin-top:1.5rem}
+.ins.c{border-left-color:var(--c);background:rgba(0,207,255,.04)}.ins.g{border-left-color:var(--g);background:rgba(245,197,24,.05)}
+.ins.gr{border-left-color:var(--gr);background:rgba(34,197,94,.05)}.ins.sp{border-left-color:var(--sp);background:rgba(255,107,53,.05)}
+hr.dv{border:none;border-top:1px solid var(--card-border)}
+
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;z-index:900;background:var(--card);backdrop-filter:blur(24px);border-bottom:1px solid var(--card-border);transition:background .4s}
+.ni{max-width:1400px;margin:0 auto;padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:.18em;color:var(--r)}.logo span{color:var(--text)}
+.tab{padding:.38rem 1.1rem;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border:1px solid transparent;cursor:pointer;background:transparent;color:var(--text3);transition:all .2s}
+.tab.on{background:var(--r);color:#fff;border-color:var(--r)}.tab:not(.on):hover{color:var(--text);border-color:var(--text3)}
+#pb{position:fixed;top:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--r),#ff8c42);z-index:9999;transition:width .08s;box-shadow:0 0 10px rgba(229,9,20,.6)}
+
+/* DARK MODE TOGGLE */
+.dark-toggle{width:40px;height:40px;border-radius:50%;border:1px solid var(--card-border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:all .3s;margin-left:.5rem}
+.dark-toggle:hover{border-color:var(--r);transform:scale(1.1)}
+
+/* LOADING */
+#ls{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+#ls.gone{opacity:0;visibility:hidden;pointer-events:none}
+.spin{width:34px;height:34px;border:2px solid rgba(229,9,20,.12);border-top-color:var(--r);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 1.2rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+#uu{display:none;flex-direction:column;align-items:center;gap:.75rem;margin-top:1.5rem}
+#uu.on{display:flex}
+.ub{background:var(--r);color:#fff;border:none;padding:.7rem 1.8rem;border-radius:999px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;font-size:.85rem}
+
+/* PARTICLES */
+#bgc{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0}
+
+/* VIEWS */
+.view{display:none}.view.on{display:block}
+/* AOS */
+.ao{opacity:0;transform:translateY(22px);transition:opacity .9s,transform .9s}
+.ao.l{transform:translateX(-22px)}.ao.r{transform:translateX(22px)}.ao.vis{opacity:1;transform:none}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 2rem;position:relative;overflow:hidden;text-align:center}
+.hero-decoration{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;border:1px solid rgba(229,9,20,.1);border-radius:50%;pointer-events:none;animation:pulse 8s ease-in-out infinite}
+.hero-decoration:nth-child(2){width:500px;height:500px;border-color:rgba(229,9,20,.07);animation-delay:-2s}
+.hero-decoration:nth-child(3){width:300px;height:300px;border-color:rgba(229,9,20,.05);animation-delay:-4s}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}50%{transform:translate(-50%,-50%) scale(1.05);opacity:.7}}
+
+/* Netflix N Logo */
+.netflix-n{display:block;margin:0 auto 2.5rem;filter:drop-shadow(0 0 60px rgba(229,9,20,.55))}
+
+.hc{position:relative;z-index:2;max-width:900px;margin:0 auto}
+.scu{position:absolute;bottom:2.25rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.35rem;color:var(--text3);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;animation:bob 2s ease-in-out infinite;z-index:2}
+@keyframes bob{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(4px)}}
+.chv{width:12px;height:12px;border-right:1.5px solid var(--text3);border-bottom:1.5px solid var(--text3);transform:rotate(45deg)}
+
+/* ── COUNTERS ── */
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.cc{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:1.6rem 1.25rem;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:background .4s,border-color .4s}
+.cn{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1;margin-bottom:.25rem}
+.cl{font-size:.72rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase}
+
+/* ── TOP SERIES BAR CHART ── */
+.topviz{display:grid;grid-template-columns:1fr 420px;gap:0;min-height:520px;border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--card-border);box-shadow:0 4px 24px rgba(0,0,0,.08);transition:background .4s,border-color .4s}
+.topviz-bars{padding:1.8rem 1.6rem;display:flex;flex-direction:column;justify-content:center;gap:.38rem}
+.topviz-hero{position:relative;overflow:hidden;background:#0d0d0d;flex-shrink:0}
+.topviz-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .55s ease;filter:brightness(.95)}
+.topviz-hero-grad{position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,10,.30) 0%,rgba(10,10,10,.0) 100%)}
+.topviz-hero-info{position:absolute;bottom:1.8rem;left:1.6rem;right:1.6rem;z-index:2}
+.topviz-hero-info .thi-rk{font-family:'Bebas Neue',sans-serif;font-size:.75rem;color:#666;letter-spacing:.18em;margin-bottom:.3rem}
+.topviz-hero-info .thi-tt{font-family:'Bebas Neue',sans-serif;font-size:2.1rem;color:#fff;line-height:1;margin-bottom:.3rem}
+.topviz-hero-info .thi-vw{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1}
+.topviz-hero-info .thi-sub{font-size:.72rem;color:#666;margin-top:.3rem}
+.tbar-row{display:flex;align-items:center;gap:.9rem;padding:.38rem .4rem;border-radius:7px;cursor:pointer;transition:background .18s}
+.tbar-row:hover{background:rgba(128,128,128,.1)}
+.tbar-row.active{background:rgba(229,9,20,.08);border-left:2px solid var(--r)}
+.tbar-rk{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--text3);min-width:1.6rem;text-align:center;transition:color .2s}
+.tbar-row.active .tbar-rk,.tbar-row:hover .tbar-rk{color:var(--r)}
+.tbar-info{flex:1;min-width:0}
+.tbar-title{font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:.22rem;transition:color .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbar-row.active .tbar-title,.tbar-row:hover .tbar-title{color:var(--text)}
+.tbar-bw{height:8px;background:rgba(128,128,128,.15);border-radius:999px;overflow:hidden}
+.tbar-b{height:100%;border-radius:999px;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.tbar-val{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;line-height:1;min-width:4rem;text-align:right;transition:font-size .2s}
+.tbar-row.active .tbar-val,.tbar-row:hover .tbar-val{font-size:1.3rem}
+.tbar-sub{font-size:.56rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;text-align:right}
+@media(max-width:860px){.topviz{grid-template-columns:1fr}.topviz-hero{height:220px}}
+
+/* ── TOP MOVIES (espejo - hero izquierda) ── */
+.topviz-movies{display:grid;grid-template-columns:420px 1fr;gap:0;min-height:520px;border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--card-border);box-shadow:0 4px 24px rgba(0,0,0,.08);transition:background .4s,border-color .4s}
+.topviz-movies .topviz-hero-grad{background:linear-gradient(270deg,rgba(10,10,10,.30) 0%,rgba(10,10,10,.0) 100%)}
+.topviz-movies .topviz-hero-info{left:auto;right:1.6rem;text-align:right}
+@media(max-width:860px){.topviz-movies{grid-template-columns:1fr}.topviz-movies .topviz-hero{height:220px;order:-1}}
+
+/* ── KPOP CALLOUT ── */
+#kpop{position:relative;overflow:hidden;min-height:50vh;display:flex;align-items:center;justify-content:center;text-align:center;background:#0a0a0a}
+#kbg{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.15) saturate(1.4);transition:filter .5s}
+#kpop:hover #kbg{filter:brightness(.22) saturate(1.4)}
+.kc{position:relative;z-index:2;padding:4rem 2rem}
+
+/* ── TREEMAP SAGAS ── */
+.treemap-section{margin-bottom:3rem}
+.treemap-title{font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:1.2rem;font-weight:700}
+.treemap-container{width:100%;background:var(--card);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;transition:background .4s,border-color .4s}
+
+/* ── SPAIN ── */
+.sp-podium{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:.6rem;align-items:end;height:360px}
+.sp-pod-item{display:flex;flex-direction:column;height:100%}
+.sp-pod-card{border-radius:10px;overflow:hidden;background:#111;cursor:pointer;flex:1;position:relative;min-height:80px}
+.sp-pod-card .sp-pod-bg{position:absolute;inset:0;background-size:cover;background-position:center top;filter:brightness(.55);transition:transform .45s,filter .35s}
+.sp-pod-card:hover .sp-pod-bg{transform:scale(1.04);filter:brightness(.75)}
+.sp-pod-card .sp-pod-ov{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 60%);display:flex;flex-direction:column;justify-content:flex-end;padding:.75rem .65rem}
+.sp-pod-medal{font-size:1.6rem;text-align:center;padding:.4rem 0;flex-shrink:0}
+.sp-pod-step{height:30px;background:rgba(128,128,128,.1);border:1px solid var(--card-border);display:flex;align-items:center;justify-content:center;border-radius:0 0 8px 8px;flex-shrink:0}
+.sp-pod-item.gold .sp-pod-card{height:100%}
+.sp-pod-item.silver .sp-pod-card{height:80%}
+.sp-pod-item.bronze .sp-pod-card{height:65%}
+
+/* Casa de Papel chart wrapper */
+.casadepapel-wrap{background:rgba(229,9,20,.04);border:1px solid rgba(229,9,20,.1);border-radius:12px;padding:1.2rem 1.4rem;margin-top:1.2rem}
+.cdp-chart-wrap{position:relative;height:140px;margin-top:.75rem}
+
+/* Spain series bars */
+.sp-sbars{display:flex;flex-direction:column;gap:.42rem}
+.sp-sbar-row{display:flex;align-items:center;gap:.75rem;padding:.65rem .8rem;border-radius:8px;background:var(--card);border:1px solid rgba(255,107,53,.15);transition:all .2s;cursor:default;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.sp-sbar-row:hover{background:var(--card);border-color:rgba(255,107,53,.35);transform:translateX(3px)}
+.sp-sbar-info{flex:1;min-width:0}
+.sp-sbar-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.22rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-sbar-bw{height:3px;background:rgba(255,107,53,.12);border-radius:999px;overflow:hidden}
+.sp-sbar-b{height:100%;background:var(--sp);border-radius:999px;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.sp-sbar-val{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;color:var(--sp);line-height:1;flex-shrink:0;min-width:3.5rem;text-align:right}
+
+/* ── GENRES - TARJETAS NEGRAS ── */
+.gbars{display:flex;flex-direction:column;gap:.55rem}
+.gbi{display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;border-radius:10px;background:#111111;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;transition:all .25s;cursor:default}
+.gbi:hover{background:#1a1a1a;border-color:rgba(255,255,255,.15);transform:translateX(3px)}
+.gbi-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .45s;filter:blur(4px) brightness(.15) saturate(1.4)}
+.gbi:hover .gbi-bg{opacity:1}
+.gbi-thumb{width:40px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;position:relative;z-index:2;border:1px solid rgba(255,255,255,.12)}
+.gbi-nothumb{width:40px;height:60px;border-radius:6px;flex-shrink:0;background:rgba(255,255,255,.08);position:relative;z-index:2}
+.gbi-info{flex:1;min-width:0;position:relative;z-index:2}
+.gbi-name{font-size:.85rem;font-weight:600;color:#ffffff;margin-bottom:.35rem;line-height:1}
+.gbi-bw{height:4px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden}
+.gbi-b{height:100%;border-radius:999px;transition:width 1.15s cubic-bezier(.16,1,.3,1);width:0}
+.gbi-right{position:relative;z-index:2;text-align:right;flex-shrink:0}
+.gbi-count{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;line-height:1;color:#ffffff}
+.gbi-lbl{font-size:.57rem;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── WAFFLE ── */
+.wfl{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
+.wc{aspect-ratio:1;border-radius:2px;cursor:pointer;transition:transform .14s}.wc:hover{transform:scale(1.4);z-index:5;position:relative}
+.wc.a{background:var(--r)}.wc.na{background:rgba(128,128,128,.2)}
+.wt{background:var(--card)!important;border:1px solid var(--card-border)!important;border-radius:12px!important;min-height:220px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;box-shadow:0 4px 20px rgba(0,0,0,.1)!important;transition:background .4s,border-color .4s}
+
+/* ── SEASONS ── */
+.sbtn{padding:.3rem .82rem;border-radius:999px;font-size:.7rem;font-weight:600;border:1px solid var(--card-border);background:var(--card);color:var(--text3);cursor:pointer;transition:all .17s;white-space:nowrap}
+.sbtn.on{color:#fff;border-color:currentColor}
+.sbtns{display:flex;flex-wrap:wrap;gap:.38rem;margin-bottom:1.2rem}
+
+/* ── SEARCH ── */
+.si{width:100%;background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:.85rem 1.3rem .85rem 2.9rem;font-size:.92rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:all .3s}
+.si:focus{border-color:var(--r)}.si::placeholder{color:var(--text3)}
+.sw{position:relative}.sic{position:absolute;left:.95rem;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.rt{width:100%;border-collapse:collapse}
+.rt th{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);padding:.65rem .9rem;text-align:left;border-bottom:1px solid var(--card-border);position:sticky;top:0;background:var(--bg2)}
+.rt td{padding:.68rem .9rem;border-bottom:1px solid var(--card-border);font-size:.85rem;color:var(--text)}
+.rt tr:hover td{background:rgba(128,128,128,.05)}
+.bm{display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.16rem .52rem;border-radius:999px}
+.bmp{background:rgba(229,9,20,.1);color:var(--r);border:1px solid rgba(229,9,20,.2)}
+.bms{background:rgba(0,207,255,.1);color:#0099cc;border:1px solid rgba(0,207,255,.25)}
+
+/* ── PODIO ── */
+.pod{display:flex;align-items:center;gap:.85rem;padding:0;border-radius:16px;margin-bottom:1.2rem;position:relative;overflow:hidden;border:1px solid var(--card-border);transition:all .3s;min-height:200px;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.pod:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.podb{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.35);z-index:0;transition:filter .3s}.pod:hover .podb{filter:brightness(.45)}
+.podc{position:relative;z-index:1;display:flex;align-items:center;gap:1.5rem;width:100%;padding:1.8rem 2rem}
+.prk2{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;line-height:1;min-width:2.5rem;text-align:center}
+.pbar{height:4px;border-radius:999px;margin-top:.5rem}
+
+/* ── DASHBOARD ── */
+.dbw{max-width:1520px;margin:0 auto;padding:1.25rem 1.5rem 2.5rem}
+.dbg{display:grid;grid-template-columns:repeat(12,1fr);gap:.9rem;margin-top:.9rem}
+.dbc{background:var(--card);border:1px solid var(--card-border);border-radius:13px;padding:1.2rem;box-shadow:0 2px 12px rgba(0,0,0,.05);transition:background .4s,border-color .4s}
+.dbt{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text3);margin-bottom:.85rem;font-weight:700}
+.ds{font-family:'Bebas Neue',sans-serif;font-size:2.3rem;line-height:1}.dsub{font-size:.7rem;color:var(--text3);margin-top:.2rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c12{grid-column:span 12}
+@media(max-width:1100px){.c3{grid-column:span 6}.c4{grid-column:span 6}}
+@media(max-width:700px){.dbg{grid-template-columns:1fr}.c3,.c4,.c5,.c6,.c7,.c12{grid-column:span 1}}
+.fp{padding:.27rem .72rem;border-radius:999px;font-size:.67rem;font-weight:600;border:1px solid var(--card-border);background:transparent;color:var(--text3);cursor:pointer;transition:all .13s}
+.fp.on{background:rgba(229,9,20,.1);border-color:var(--r);color:var(--r)}
+.fr{display:flex;flex-wrap:wrap;gap:.32rem;margin-bottom:.45rem}
+.dli{display:flex;align-items:center;gap:.6rem;padding:.42rem 0;border-bottom:1px solid var(--card-border)}.dli:last-child{border-bottom:none}
+.dlr{font-family:'Bebas Neue',sans-serif;font-size:.82rem;color:var(--text3);min-width:1.2rem;text-align:center}
+.dlbw{flex:1;min-width:0}.dlt{font-size:.73rem;font-weight:500;color:var(--text2);margin-bottom:.17rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dlb{height:3px;border-radius:999px}.dlv{font-size:.7rem;font-weight:700;text-align:right;white-space:nowrap;min-width:3rem}
+.dbpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:.42rem}
+.dbp{position:relative;border-radius:8px;overflow:hidden;background:#111;cursor:pointer;aspect-ratio:.67}
+.dbpb{position:absolute;inset:0;background-size:cover;background-position:center top;filter:brightness(.45);transition:transform .35s,filter .35s}.dbp:hover .dbpb{transform:scale(1.07);filter:brightness(.7)}
+.dbpc{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 55%);display:flex;flex-direction:column;justify-content:flex-end;padding:.6rem .55rem}
+.dbpn{font-size:.7rem;font-weight:600;color:#e8e8e8;line-height:1.2;margin-bottom:.12rem}.dbpv{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;line-height:1}
+
+/* ── SECTION SIDEBAR NAV ── */
+#snav{position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);z-index:800;display:flex;flex-direction:column;gap:.4rem;opacity:0;pointer-events:none;transition:opacity .5s}
+#snav.vis{opacity:1;pointer-events:auto}
+.snd{display:flex;align-items:center;gap:.5rem;justify-content:flex-end;cursor:pointer;padding:.3rem 0}
+.snd-lbl{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);opacity:0;transform:translateX(10px);transition:all .25s;white-space:nowrap}
+.snd:hover .snd-lbl,.snd.on .snd-lbl{opacity:1;transform:translateX(0);color:var(--text2)}
+.snd-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:all .2s;flex-shrink:0}
+.snd:hover .snd-dot{background:var(--r);transform:scale(1.3)}
+.snd.on .snd-dot{background:var(--r);transform:scale(1.5)}
+#nav-crumb{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);opacity:0;transition:opacity .3s;padding-left:.6rem;border-left:1px solid var(--card-border)}
+#nav-crumb.vis{opacity:1}
+@media(max-width:900px){#snav{display:none}}
+
+/* ── COUNTRY RANK ── */
+.crank{display:flex;flex-direction:column;gap:.55rem}
+.cri{display:flex;align-items:center;gap:.85rem;padding:.75rem 1rem;border-radius:10px;background:var(--card);border:1px solid var(--card-border);transition:all .2s}
+.cri:hover{transform:translateX(4px)}
+.cri.top1{background:rgba(229,9,20,.05);border-color:rgba(229,9,20,.15)}
+.cri-rk{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--text3);min-width:1.8rem;text-align:center}
+.cri.top1 .cri-rk{color:var(--r)}
+.cri-flag{font-size:1.6rem;flex-shrink:0}
+.cri-info{flex:1;min-width:0}
+.cri-name{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem}
+.cri-bw{height:5px;background:rgba(128,128,128,.15);border-radius:999px;overflow:hidden}
+.cri-b{height:100%;border-radius:999px;transition:width 1.2s cubic-bezier(.16,1,.3,1);width:0}
+.cri-nums{text-align:right;flex-shrink:0;min-width:4rem}
+.cri-count{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;line-height:1}
+.cri-sub{font-size:.55rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.crank-note{font-size:.68rem;color:var(--text3);margin-top:.75rem;text-align:right}
+
+/* ── KIDS ── */
+.kids-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.7rem}
+.kids-card{position:relative;border-radius:10px;overflow:hidden;background:var(--card);border:1px solid var(--card-border);padding:.9rem .85rem;transition:transform .2s,box-shadow .2s;cursor:default}
+.kids-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.kids-card-name{font-size:.72rem;font-weight:700;color:var(--text);margin-bottom:.5rem;letter-spacing:.01em}
+.kids-card-bar-wrap{height:6px;background:rgba(128,128,128,.15);border-radius:999px;overflow:hidden;margin-bottom:.4rem}
+.kids-card-bar{height:100%;border-radius:999px;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.kids-card-val{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;line-height:1}
+.kids-card-sub{font-size:.55rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── AUTHOR BADGE ── */
+#author-badge{position:fixed;bottom:1.4rem;left:1.4rem;z-index:850;display:flex;align-items:center;gap:.7rem;background:var(--card);border:1px solid var(--card-border);border-radius:999px;padding:.38rem .9rem .38rem .38rem;backdrop-filter:blur(18px);box-shadow:0 2px 18px rgba(0,0,0,.15);text-decoration:none;transition:all .25s;max-width:220px}
+#author-badge:hover{border-color:var(--r);box-shadow:0 4px 24px rgba(229,9,20,.18);transform:translateY(-2px)}
+.ab-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--r);flex-shrink:0;display:block}
+.ab-text{display:flex;flex-direction:column;min-width:0}
+.ab-label{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);line-height:1}
+.ab-name{font-size:.72rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div id="pb"></div>
+
+<!-- AUTHOR BADGE -->
+<a id="author-badge" href="https://es.linkedin.com/in/pedro-garcia-mauri%C3%B1o-848aa2270" target="_blank" rel="noopener" title="Informe elaborado por Pedro García-Mauriño">
+  <img class="ab-avatar" src="https://i.ibb.co/4n93j7rF/Gemini-Generated-Image-ryq0oyryq0oyryq0.png" alt="Pedro García-Mauriño" onerror="this.style.display='none'">
+  <div class="ab-text">
+    <span class="ab-label">BY:</span>
+    <span class="ab-name">Pedro García-Mauriño</span>
+  </div>
+</a>
+
+<!-- SECTION SIDEBAR NAV -->
+<nav id="snav">
+  <div class="snd" data-sec="hero" onclick="scrollToSec('hero')"><div class="snd-lbl">Portada</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec01" onclick="scrollToSec('sec01')"><div class="snd-lbl">01 La escala</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec02" onclick="scrollToSec('sec02')"><div class="snd-lbl">02 Top Series</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec03" onclick="scrollToSec('sec03')"><div class="snd-lbl">03 Top Películas</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec04" onclick="scrollToSec('sec04')"><div class="snd-lbl">04 Franquicias</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec09" onclick="scrollToSec('sec09')"><div class="snd-lbl">05 España</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec06" onclick="scrollToSec('sec06')"><div class="snd-lbl">06 Géneros</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec07" onclick="scrollToSec('sec07')"><div class="snd-lbl">07 Animación</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec08" onclick="scrollToSec('sec08')"><div class="snd-lbl">08 Temporadas</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec05" onclick="scrollToSec('sec05')"><div class="snd-lbl">09 El mapa</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec10" onclick="scrollToSec('sec10')"><div class="snd-lbl">10 Kids</div><div class="snd-dot"></div></div>
+  <div class="snd" data-sec="sec11" onclick="scrollToSec('sec11')"><div class="snd-lbl">11 Podio</div><div class="snd-dot"></div></div>
+</nav>
+
+<!-- LOADING -->
+<div id="ls">
+  <div style="text-align:center">
+    <div class="spin"></div>
+    <p class="bbs" style="font-size:1.3rem;letter-spacing:.3em;color:var(--text)" id="lt">Cargando datos…</p>
+    <div id="uu">
+      <p style="color:var(--text2);font-size:.8rem;max-width:300px;line-height:1.6">Pon los 4 CSV en la misma carpeta que este archivo, o selecciónalos aquí:</p>
+      <label class="ub" for="cfi">Seleccionar 4 CSVs</label>
+      <input type="file" id="cfi" multiple accept=".csv" style="display:none">
+      <p id="um" style="font-size:.75rem;color:var(--r)"></p>
+    </div>
+  </div>
+</div>
+
+<nav id="nav">
+  <div class="ni">
+    <div style="display:flex;align-items:center;gap:1.1rem"><div class="logo">NETFLIX<span> 2025</span></div><div id="nav-crumb"></div></div>
+    <div style="display:flex;gap:.42rem;align-items:center">
+      <button class="tab on" onclick="swT('i',this)">Informe</button>
+      <button class="tab" onclick="swT('d',this)">Dashboard</button>
+      <button class="dark-toggle" onclick="toggleDark()" title="Modo claro">☀️</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════ INFORME ══════ -->
+<div id="vi" class="view on" style="padding-top:56px;position:relative;z-index:1">
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-decoration"></div>
+    <div class="hero-decoration"></div>
+    <div class="hero-decoration"></div>
+    <div class="hc ao">
+      <!-- Netflix N Logo -->
+      <svg class="netflix-n" width="90" height="140" viewBox="0 0 90 140" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ng" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#E50914"/>
+            <stop offset="100%" stop-color="#a3000d"/>
+          </linearGradient>
+        </defs>
+        <text x="45" y="128" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="148" fill="url(#ng)" letter-spacing="-2">N</text>
+      </svg>
+      <div class="lbl ao" style="font-size:.65rem;margin-bottom:1.5rem">Reporte interactivo · Datos oficiales Netflix 2025</div>
+      <h1 class="bbs ao" style="font-size:clamp(4.5rem,17vw,15rem);line-height:.9;margin-bottom:1rem">
+        <span style="color:var(--r);text-shadow:0 0 100px rgba(229,9,20,.35)">LO QUE EL</span><br><span>MUNDO VIO</span>
+      </h1>
+      <p class="bbs ao" style="font-size:clamp(1.1rem,2.5vw,2rem);color:var(--text2);letter-spacing:.14em;margin-bottom:1.25rem">Lo más visto de Netflix</p>
+      <p style="font-family:'DM Serif Display',serif;font-style:italic;font-size:clamp(.95rem,1.7vw,1.35rem);color:var(--text2);line-height:1.55" class="ao">"19.000 títulos, 48.000 millones de visualizaciones.<br>Una historia que nunca te habían contado así."</p>
+    </div>
+    <div class="scu"><span></span><div class="chv"></div></div>
+  </section>
+
+  <hr class="dv">
+
+  <section id="sec01"><div class="w">
+    <div class="lbl ao">01 — La escala</div>
+    <h2 class="sh ao" style="margin-bottom:2.75rem">Un catálogo<br>difícil de creer</h2>
+    <div class="cg">
+      <div class="cc ao"><div class="cn" style="color:var(--r)" id="c-pm">—</div><div class="cl">Películas</div></div>
+      <div class="cc ao"><div class="cn" style="color:var(--c)" id="c-sm">—</div><div class="cl">Series</div></div>
+      <div class="cc ao"><div class="cn" style="color:var(--g)" id="c-pv">—</div><div class="cl">Miles de millones · Views películas</div></div>
+      <div class="cc ao"><div class="cn" style="color:var(--p)" id="c-sv">—</div><div class="cl">Miles de millones · Views series</div></div>
+    </div>
+  </div></section>
+
+  <hr class="dv">
+
+  <section id="sec02"><div class="w" style="padding-bottom:3rem">
+    <div style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:1.5rem;margin-bottom:1.75rem">
+      <div class="ao l"><div class="lbl c">02 — Top series · Visualizaciones 2025</div><h2 class="sh">Las series que<br>dominaron el año</h2></div>
+      <div class="ao r" style="max-width:380px"><p class="bt" style="font-size:.88rem">¡Adolescence nos sorprendió a todos! Desde thrillers coreanos hasta dramas británicos. Este es el top 10 de series más vistas en Netflix durante 2025.</p></div>
+    </div>
+    <div class="topviz ao" id="s-topviz">
+      <div class="topviz-bars" id="s-topviz-bars"></div>
+      <div class="topviz-hero" id="s-topviz-hero">
+        <div class="topviz-hero-bg" id="s-hero-bg"></div>
+        <div class="topviz-hero-grad"></div>
+        <div class="topviz-hero-info" id="s-hero-info">
+          <div class="thi-rk">Selecciona o pasa el cursor</div>
+          <div class="thi-tt">— Top Series 2025 —</div>
+          <div class="thi-vw" style="color:var(--c)"></div>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <hr class="dv">
+
+  <!-- TOP PELÍCULAS - Estructura espejo -->
+  <section id="sec03"><div class="w" style="padding-bottom:3rem">
+    <div style="display:grid;grid-template-columns:auto 1fr;align-items:end;gap:1.5rem;margin-bottom:1.75rem">
+      <div class="ao l"><div class="lbl">03 — Top películas · Visualizaciones 2025</div><h2 class="sh">Animación,<br>comedia y acción</h2></div>
+      <div class="ao r" style="max-width:380px"><p class="bt" style="font-size:.88rem"><strong>KPop Demon Hunters arrasó con 518M.</strong> El segundo puesto logró 190M. Una diferencia de <strong>328 millones</strong>. La película logró más visionados que cualquier saga del catálogo combinada. El gráfico lo dice todo.</p></div>
+    </div>
+    <div class="topviz-movies ao" id="m-topviz">
+      <div class="topviz-hero" id="m-topviz-hero">
+        <div class="topviz-hero-bg" id="m-hero-bg"></div>
+        <div class="topviz-hero-grad"></div>
+        <div class="topviz-hero-info" id="m-hero-info">
+          <div class="thi-rk">Selecciona o pasa el cursor</div>
+          <div class="thi-tt">— Top Películas 2025 —</div>
+          <div class="thi-vw" style="color:var(--r)"></div>
+        </div>
+      </div>
+      <div class="topviz-bars" id="m-topviz-bars"></div>
+    </div>
+  </div></section>
+
+  <!-- KPOP -->
+  <div id="kpop"><div id="kbg"></div>
+    <div class="kc ao">
+      <div class="lbl g" style="color:#F5C518">El fenómeno del año</div>
+      <div class="bbs" style="font-size:clamp(5rem,17vw,13rem);line-height:.9;color:var(--g);text-shadow:0 4px 60px rgba(245,197,24,.5)">518M</div>
+      <div class="bbs" style="font-size:clamp(1.5rem,4vw,3rem);color:#ffffff;letter-spacing:.06em;margin-top:.5rem;text-shadow:0 2px 20px rgba(0,0,0,.8)">KPop Demon Hunters</div>
+      <p style="margin-top:1.25rem;max-width:520px;margin-left:auto;margin-right:auto;font-size:1rem;color:rgba(255,255,255,.85);line-height:1.7">La segunda película tiene 190M. La diferencia fue de <strong style="color:#fff">328 millones</strong>. No es un éxito: es una anomalía.</p>
+    </div>
+  </div>
+
+  <hr class="dv">
+
+  <!-- FRANQUICIAS - Treemaps interactivos -->
+  <section id="sec04"><div class="w wide">
+    <div class="lbl g ao">04 — Franquicias</div>
+    <h2 class="sh ao" style="margin-bottom:.5rem">La familiaridad<br>siempre gana</h2>
+    <p class="bt ao" style="margin-bottom:3rem;max-width:640px">Combinamos las visualizaciones de las sagas con más de una entrega en el Top 200. El tamaño representa el total acumulado. ¿He mencionado ya que Kpop Demon Hunters superó a 7 entregas de Gru? Creo que sí.</p>
+    
+    <div class="treemap-section ao">
+      <div class="treemap-title" style="color:var(--r)">🎬 Sagas de Películas · Views totales</div>
+      <div class="treemap-container" id="treemap-movies"></div>
+    </div>
+    
+    <div class="treemap-section ao">
+      <div class="treemap-title" style="color:var(--c)">📺 Sagas de Series · Views totales</div>
+      <div class="treemap-container" id="treemap-series"></div>
+    </div>
+  </div></section>
+
+  <hr class="dv">
+
+  <section id="sec09" style="background:linear-gradient(135deg,rgba(255,107,53,.07),rgba(255,107,53,.01));border-top:1px solid rgba(255,107,53,.15);border-bottom:1px solid rgba(255,107,53,.15)">
+    <div class="w">
+      <div class="lbl sp ao">05 — Producción española</div>
+      <h2 class="sh ao" style="margin-bottom:.5rem">España en el<br><span style="color:var(--sp)">mapa global</span></h2>
+      <p class="bt ao" style="margin-bottom:2.5rem;max-width:580px"><strong>9 títulos entre los 400 más vistos del mundo.</strong> España compite con thriller, drama y comedia romántica.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start">
+        <div class="ao l">
+          <p style="font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sp);margin-bottom:1rem;font-weight:700">🎬 Películas Españolas · Podio</p>
+          <div class="sp-podium" id="sp-podium"></div>
+        </div>
+        <div class="ao r">
+          <p style="font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--sp);margin-bottom:1rem;font-weight:700">📺 Series Españolas · Views</p>
+          <div class="sp-sbars" id="sp-sbar"></div>
+          <div class="casadepapel-wrap">
+            <p style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--r);font-weight:700;margin-bottom:.3rem">🏠 La Casa de Papel · Evolución por temporadas</p>
+            <p style="font-size:.78rem;color:var(--text2);margin-bottom:.1rem">Catálogo completo Netflix · Views en millones</p>
+            <div class="cdp-chart-wrap"><canvas id="c-cdp"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="dv">
+
+  <!-- GÉNEROS -->
+  <section id="sec06"><div class="w">
+    <div class="lbl ao">06 — Los géneros</div>
+    <h2 class="sh ao" style="margin-bottom:.75rem">Drama en series.<br>Acción en películas.</h2>
+    <p class="bt ao" style="margin-bottom:2.75rem;max-width:640px">Analizando los géneros del Top 200 de películas y series, encontramos lo siguiente: en series lidera el Drama (43) seguido de Kids (36) y Thriller (19). En películas: Acción (50), Comedia (41) y Familiar (23).</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+      <div class="ao l">
+        <div style="font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--c);margin-bottom:1rem;font-weight:700">📺 Géneros · Top 200 Series</div>
+        <div id="g-s-bars" class="gbars"></div>
+      </div>
+      <div class="ao r">
+        <div style="font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--r);margin-bottom:1rem;font-weight:700">🎬 Géneros · Top 200 Películas</div>
+        <div id="g-m-bars" class="gbars"></div>
+      </div>
+    </div>
+  </div></section>
+
+  <hr class="dv">
+
+  <section id="sec07" style="background:linear-gradient(135deg,rgba(229,9,20,.05),rgba(229,9,20,.01));border-top:1px solid rgba(229,9,20,.1);border-bottom:1px solid rgba(229,9,20,.1)">
+    <div class="w n" style="text-align:center">
+      <div class="lbl ao">07 — Animación</div>
+      <h2 class="sh ao" style="margin-bottom:.9rem">57 de 200 películas<br>del Top son animadas</h2>
+      <p class="bt ao" style="margin:0 auto 2rem;max-width:500px">Pasa el cursor sobre cada cuadrado para ver el título. <span style="color:var(--r)">■</span> Animación · <span style="color:#1a1a1a">■</span> Acción real</p>
+      <div style="display:flex;gap:2rem;align-items:flex-start;justify-content:center;flex-wrap:wrap">
+        <div id="wfl" class="wfl ao" style="max-width:540px;flex:1 1 300px"></div>
+        <div class="wt ao" id="wt" style="width:260px;flex-shrink:0"><p style="font-size:.62rem;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:1.5rem">Pasa el cursor<br>sobre un cuadrado</p></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="dv">
+
+  <section id="sec08"><div class="w">
+    <div class="lbl gr ao">08 — Comparativa por temporadas</div>
+    <h2 class="sh ao" style="margin-bottom:.75rem">Cada temporada,<br>una historia diferente</h2>
+    <p class="bt ao" style="margin-bottom:.75rem;max-width:650px">Visualizaciones totales por temporada de algunas de las sagas de series más interesantes. ¿Es la última temporada lanzada siempre la más vista? Spoiler: no.</p>
+    <div class="ins gr ao" style="max-width:650px;margin-bottom:2.75rem"><p class="bt"><strong>Clave:</strong> Una T1 alta suele ser un buen indicador de discovery. Las temporadas siguientes sugieren retención. Y Black Mirror T7 lo rompe todo.</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:2.5rem;align-items:start">
+      <div class="ao l"><div class="sbtns" id="sb1"></div><div class="gl" id="ss1" style="padding:1.2rem;font-size:.82rem;color:var(--text2);min-height:90px"><p>Selecciona una saga</p></div></div>
+      <div class="gl ao r" style="padding:1.5rem"><div style="position:relative;height:280px"><canvas id="c-sea"></canvas></div></div>
+    </div>
+  </div></section>
+
+  <section style="background:linear-gradient(135deg,rgba(245,197,24,.07),rgba(245,197,24,.01));border-top:1px solid rgba(245,197,24,.12);border-bottom:1px solid rgba(245,197,24,.12)">
+    <div class="w n" style="text-align:center">
+      <div class="lbl g ao">La resurrección más espectacular</div>
+      <h2 class="sh ao" style="margin-bottom:.75rem">Black Mirror T7<br><span style="color:var(--g)">+599% vs T5</span></h2>
+      <p class="bt ao" style="margin:0 auto 2rem;max-width:540px">De 5,2M en T5 a 36,3M en T7. El mayor salto proporcional de todo el catálogo.</p>
+      <div class="gl ao" style="max-width:620px;margin:0 auto;padding:1.5rem"><div style="position:relative;height:220px"><canvas id="c-bm"></canvas></div></div>
+    </div>
+  </section>
+
+  <hr class="dv">
+
+  <!-- MAPA -->
+  <section id="sec05"><div class="w">
+    <div class="lbl ao">09 — El mapa</div>
+    <h2 class="sh ao" style="margin-bottom:1rem">Corea del Sur<br>y UK: los rivales</h2>
+    <p class="bt ao" style="margin-bottom:2rem;max-width:650px">¿Cuántas producciones aporta cada país a el Top 200 de series y pelçiculas? Para series: <strong>USA 113, UK 18, Corea 17, Japón 9, España 6, Brasil 6</strong>. En películas: USA 157/200. UK 9, Francia 8. La hegemonía americana en cine es aún mayor.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start">
+      <div class="ao l">
+        <div style="font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text);margin-bottom:1rem;font-weight:700">🌍 Top 200 combinado · Títulos por país</div>
+        <div id="wmap-rank" class="crank"></div>
+        <p class="crank-note">Series + Películas · Top 200 cada lista</p>
+      </div>
+      <div class="ao r">
+        <div style="font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text);margin-bottom:1rem;font-weight:700">🗺️ Mapa de calor mundial</div>
+        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--card-border);box-shadow:0 2px 12px rgba(0,0,0,.07);background:var(--card)"><div id="wmap" style="height:340px"></div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <hr class="dv">
+
+  <section id="sec10" style="background:linear-gradient(135deg,rgba(0,207,255,.06),rgba(0,207,255,.01));border-top:1px solid rgba(0,207,255,.12);border-bottom:1px solid rgba(0,207,255,.12)">
+    <div class="w n" style="text-align:center">
+      <div class="lbl c ao">10 — Contenido infantil</div>
+      <h2 class="sh ao" style="margin-bottom:.75rem">Los niños no churnean.<br>Los padres tampoco.</h2>
+      <p class="bt ao" style="margin:0 auto 2rem;max-width:560px">Las franquicias de contenido infantil suponen un torrente de visualizaciones acumuladas. <strong>Peppa Pig combianda supera a Adolescence y a la 3ª temporada de Squid Game.</strong></p>
+      <div id="kids-grid" class="kids-grid ao" style="max-width:820px;margin:0 auto"></div>
+    </div>
+  </section>
+
+  <hr class="dv">
+
+  <section id="sec11"><div class="w n">
+    <div class="lbl g ao">11 — El podio definitivo</div>
+    <h2 class="sh ao" style="margin-bottom:.5rem">3 títulos que<br>pararon el mundo</h2>
+    <p class="bt ao" style="margin-bottom:2.25rem;max-width:520px">3 géneros, 3 países, 3 formatos. Todos superaron 150M de visualizaciones en un solo año.</p>
+    <div id="podio" class="ao"></div>
+  </div></section>
+
+  <hr class="dv">
+
+  <section><div class="w">
+    <div class="lbl g ao">Tu turno</div>
+    <h2 class="sh ao" style="margin-bottom:.75rem">Busca tu serie<br>o película favorita</h2>
+    <p class="bt ao" style="margin-bottom:2rem;max-width:560px">Todo el catálogo Netflix 2025: más de 19.000 títulos.</p>
+    <div class="gl ao" style="padding:2rem">
+      <div class="sw" style="margin-bottom:1.5rem">
+        <svg class="sic" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="si" id="s-in" placeholder="Ej: Squid Game, Barbie, The Office…">
+      </div>
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--card-border);max-height:440px;overflow-y:auto">
+        <table class="rt"><thead><tr><th>Título</th><th>Tipo</th><th style="text-align:right">Views (M)</th><th style="text-align:right">Horas</th></tr></thead><tbody id="s-body"></tbody></table>
+      </div>
+      <div id="s-info" style="font-size:.68rem;color:var(--text3);margin-top:.65rem;letter-spacing:.12em;text-transform:uppercase"></div>
+    </div>
+  </div></section>
+
+  <footer style="text-align:center;padding:1.75rem;border-top:1px solid var(--card-border)">
+    <p style="font-size:.68rem;color:var(--text3)">Datos oficiales Netflix 2025</p>
+  </footer>
+</div>
+
+<!-- ══════ DASHBOARD ══════ -->
+<div id="vd" class="view" style="padding-top:56px;position:relative;z-index:1">
+  <div class="dbw">
+    <!-- FILTROS -->
+    <div class="dbc" style="margin-top:0">
+      <div class="dbt">Filtros — Top 200 Series + Películas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:1.5rem">
+        <div><p style="font-size:.57rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.38rem">País</p><div class="fr" id="f-c"></div></div>
+        <div><p style="font-size:.57rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.38rem">Género</p><div class="fr" id="f-g"></div></div>
+        <div><p style="font-size:.57rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.38rem">Animación</p><div class="fr" id="f-a"></div></div>
+        <div><p style="font-size:.57rem;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.38rem">Formato</p><div class="fr" id="f-f"></div></div>
+        <div style="margin-left:auto;display:flex;align-items:flex-end">
+          <button onclick="rF()" style="padding:.26rem .85rem;border-radius:999px;font-size:.67rem;font-weight:600;border:1px solid var(--card-border);background:transparent;color:var(--text3);cursor:pointer">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="dbg">
+      <div class="dbc c3"><div class="dbt">Película #1</div><div class="ds" style="color:var(--r)" id="db-mv">—</div><div class="dsub" id="db-mt">—</div></div>
+      <div class="dbc c3"><div class="dbt">Serie #1</div><div class="ds" style="color:var(--c)" id="db-sv">—</div><div class="dsub" id="db-st">—</div></div>
+      <div class="dbc c3"><div class="dbt">Views catálogo total</div><div class="ds" style="color:var(--g)" id="db-tv">—</div><div class="dsub">Miles de millones</div></div>
+      <div class="dbc c3"><div class="dbt">Títulos filtrados</div><div class="ds" style="color:var(--p)" id="db-ft">—</div><div class="dsub">del top 200</div></div>
+
+      <!-- TOP PELÍCULAS (ranking) -->
+      <div class="dbc c6">
+        <div class="dbt">🎬 Top Películas · Visualizaciones</div>
+        <div id="db-pm-rank"></div>
+      </div>
+
+      <!-- TOP SERIES (ranking) -->
+      <div class="dbc c6">
+        <div class="dbt">📺 Top Series · Visualizaciones</div>
+        <div id="db-ls"></div>
+      </div>
+
+      <!-- SAGAS PELÍCULAS -->
+      <div class="dbc c6">
+        <div class="dbt">🎬 Sagas Películas · Views acumuladas</div>
+        <div style="position:relative;height:230px"><canvas id="db-sm"></canvas></div>
+      </div>
+
+      <!-- SAGAS SERIES -->
+      <div class="dbc c6">
+        <div class="dbt">📺 Sagas Series · Views acumuladas</div>
+        <div style="position:relative;height:230px"><canvas id="db-ss"></canvas></div>
+      </div>
+
+      <!-- PAÍSES SERIES -->
+      <div class="dbc c4">
+        <div class="dbt">🌍 Países · Series</div>
+        <div style="position:relative;height:220px"><canvas id="db-cs"></canvas></div>
+      </div>
+
+      <!-- GÉNEROS SERIES -->
+      <div class="dbc c4">
+        <div class="dbt">📺 Géneros · Series</div>
+        <div style="position:relative;height:220px"><canvas id="db-gs"></canvas></div>
+      </div>
+
+      <!-- GÉNEROS PELÍCULAS -->
+      <div class="dbc c4">
+        <div class="dbt">🎬 Géneros · Películas</div>
+        <div style="position:relative;height:220px"><canvas id="db-gm"></canvas></div>
+      </div>
+
+      <!-- TEMPORADAS -->
+      <div class="dbc c12">
+        <div class="dbt">Comparativa por temporadas</div>
+        <div class="sbtns" id="sb2"></div>
+        <div style="position:relative;height:155px"><canvas id="c-sea2"></canvas></div>
+      </div>
+
+      <!-- BUSCADOR -->
+      <div class="dbc c12">
+        <div class="dbt">Buscador completo</div>
+        <div class="sw" style="margin-bottom:.9rem">
+          <svg class="sic" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" class="si" id="sd-in" placeholder="Busca un título…">
+        </div>
+        <div style="overflow-x:auto;border-radius:8px;border:1px solid var(--card-border);max-height:310px;overflow-y:auto">
+          <table class="rt"><thead><tr><th>Título</th><th>Tipo</th><th style="text-align:right">Views (M)</th><th style="text-align:right">Horas</th></tr></thead><tbody id="sd-body"></tbody></table>
+        </div>
+        <div id="sd-info" style="font-size:.68rem;color:var(--text3);margin-top:.5rem;letter-spacing:.12em;text-transform:uppercase"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DARK MODE
+══════════════════════════════════════════ */
+let isDark = true;
+document.body.classList.add('dark');
+function toggleDark() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  document.querySelector('.dark-toggle').textContent = isDark ? '☀️' : '🌙';
+  // Update charts if they exist
+  updateChartsTheme();
+}
+
+function updateChartsTheme() {
+  const textColor = isDark ? '#888888' : '#888888';
+  const gridColor = isDark ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.06)';
+  Chart.defaults.color = textColor;
+  // Rebuild charts that need theme update
+  Object.values(CH).forEach(chart => {
+    if (chart.options?.scales?.x) {
+      chart.options.scales.x.grid.color = gridColor;
+      chart.options.scales.x.ticks.color = textColor;
+    }
+    if (chart.options?.scales?.y) {
+      chart.options.scales.y.grid.color = gridColor;
+      chart.options.scales.y.ticks.color = textColor;
+    }
+    chart.update();
+  });
+}
+
+/* ══════════════════════════════════════════
+   PARTICLES - Potenciadas
+══════════════════════════════════════════ */
+const BC=document.getElementById('bgc'),BX=BC.getContext('2d');let PP=[];
+function rBC(){BC.width=innerWidth;BC.height=innerHeight}rBC();
+window.addEventListener('resize',()=>{rBC();makePP()},{ passive:true});
+function makePP(){
+  PP=[];
+  const n=Math.floor(BC.width*BC.height/8000); // Más partículas
+  const cl=[
+    'rgba(229,9,20,.7)',
+    'rgba(229,9,20,.5)',
+    'rgba(229,9,20,.3)',
+    'rgba(229,9,20,.15)',
+    'rgba(255,100,100,.4)',
+    'rgba(255,50,50,.25)'
+  ];
+  for(let i=0;i<n;i++){
+    PP.push({
+      x:Math.random()*BC.width,
+      y:Math.random()*BC.height,
+      vx:(Math.random()-.5)*.25,
+      vy:(Math.random()-.5)*.18+.08,
+      r:Math.random()*2.5+.5,
+      c:cl[~~(Math.random()*6)],
+      pulse:Math.random()*Math.PI*2,
+      pulseSpeed:Math.random()*.02+.01
+    });
+  }
+}
+makePP();
+(function loop(){
+  requestAnimationFrame(loop);
+  const bgColor = isDark ? '#0a0a0a' : '#ffffff';
+  BX.fillStyle=bgColor;
+  BX.fillRect(0,0,BC.width,BC.height);
+  PP.forEach(p=>{
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.pulse+=p.pulseSpeed;
+    const pulseFactor = 0.3 + Math.sin(p.pulse) * 0.3;
+    if(p.y>BC.height+10)p.y=-10;
+    if(p.y<-10)p.y=BC.height+10;
+    if(p.x<-10)p.x=BC.width+10;
+    if(p.x>BC.width+10)p.x=-10;
+    BX.beginPath();
+    BX.arc(p.x,p.y,p.r*(1+pulseFactor*.3),0,Math.PI*2);
+    BX.fillStyle=p.c;
+    BX.fill();
+    // Glow effect
+    if(p.r > 1.5) {
+      BX.beginPath();
+      BX.arc(p.x,p.y,p.r*2,0,Math.PI*2);
+      BX.fillStyle=p.c.replace(/[\d.]+\)$/,`${pulseFactor*.3})`);
+      BX.fill();
+    }
+  });
+})();
+
+/* ══════════════════════════════════════════
+   PROGRESS + AOS + TABS
+══════════════════════════════════════════ */
+window.addEventListener('scroll',()=>{
+  const pct=scrollY/(document.documentElement.scrollHeight-innerHeight)*100;
+  document.getElementById('pb').style.width=pct+'%';
+  updateSideNav();
+},{passive:true});
+
+const IO=new IntersectionObserver(ee=>ee.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');IO.unobserve(e.target);}}),{threshold:.1});
+function initAOS(){document.querySelectorAll('.ao').forEach(el=>IO.observe(el));}
+
+function swT(t,b){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.getElementById('v'+t).classList.add('on');
+  b.classList.add('on');
+  const snav=document.getElementById('snav');
+  if(t==='i'){snav.classList.add('vis');}else{snav.classList.remove('vis');}
+}
+
+/* ── SECTION SIDEBAR LOGIC ── */
+const SEC_IDS=['hero','sec01','sec02','sec03','sec04','sec05','sec06','sec07','sec08','sec09','sec10','sec11'];
+const SEC_NAMES={hero:'Portada',sec01:'01 La escala',sec02:'02 Top Series',sec03:'03 Top Películas',sec04:'04 Franquicias',sec05:'05 El mapa',sec06:'06 Géneros',sec07:'07 Animación',sec08:'08 Temporadas',sec09:'09 España',sec10:'10 Kids',sec11:'11 Podio'};
+let currentSec='hero';
+
+function updateSideNav(){
+  let active='hero';
+  for(const id of SEC_IDS){
+    const el=document.getElementById(id);if(!el)continue;
+    if(el.getBoundingClientRect().top<=120)active=id;
+  }
+  if(active===currentSec)return;
+  currentSec=active;
+  document.querySelectorAll('.snd').forEach(d=>d.classList.toggle('on',d.dataset.sec===active));
+  const crumb=document.getElementById('nav-crumb');
+  if(crumb){crumb.textContent=SEC_NAMES[active]||'';crumb.classList.toggle('vis',active!=='hero');}
+}
+
+window.scrollToSec=function(id){
+  const el=document.getElementById(id);if(!el)return;
+  const top=id==='hero'?0:el.getBoundingClientRect().top+scrollY-64;
+  window.scrollTo({top,behavior:'smooth'});
+};
+
+setTimeout(()=>document.getElementById('snav').classList.add('vis'),1200);
+
+/* ══════════════════════════════════════════
+   CSV LOADING
+══════════════════════════════════════════ */
+const CSV_FILES = {
+  s200: './TOP_200_SERIES_NETFLIX_AUDIT.csv',
+  p200: './TOP_200_PELIS_NETFLIX_AUDIT.csv',
+  stot: './Series_Netflix_Totales.csv',
+  ptot: './Pelis_Netflix_Totales.csv'
+};
+
+function parseCSV(file){
+  return new Promise((res,rej)=>Papa.parse(file,{download:true,header:true,delimiter:';',skipEmptyLines:true,dynamicTyping:true,complete:r=>res(r.data),error:e=>rej(e)}));
+}
+function parseFile(f){
+  return new Promise((res,rej)=>Papa.parse(f,{header:true,delimiter:';',skipEmptyLines:true,dynamicTyping:true,complete:r=>res(r.data),error:e=>rej(e)}));
+}
+function img(r,pref){
+  const v=String(r[pref+' V']||'').trim();const h=String(r[pref+' H']||'').trim();const s=String(r[pref+' Saga']||'').trim();
+  if(v&&v!=='nan')return v; if(h&&h!=='nan')return h; if(s&&s!=='nan')return s; return '';
+}
+function imgH(r){const h=String(r['Image URL H']||'').trim();return (h&&h!=='nan')?h:img(r,'Image URL');}
+function imgV(r){const v=String(r['Image URL V']||'').trim();return (v&&v!=='nan')?v:imgH(r);}
+function imgS(r){const s=String(r['Image URL Saga']||'').trim();return (s&&s!=='nan')?s:imgV(r);}
+function cleanT(t){return (t||'').split(' //')[0].replace(/: Season (\d+)/i,' S$1').replace(/: Limited Series$/i,'').trim();}
+function cleanTFull(t){return (t||'').split(' //')[0].trim();}
+function fmtH(h){return h>=1e9?(h/1e9).toFixed(1)+'B h':h>=1e6?(h/1e6).toFixed(0)+'M h':(h/1e3).toFixed(0)+'K h';}
+function isAnim(r){return String(r.Animation||'').trim()==='Yes';}
+
+/* ══════════════════════════════════════════
+   CHART DEFAULTS
+══════════════════════════════════════════ */
+Chart.defaults.color='#888888';Chart.defaults.font.family="'DM Sans',sans-serif";
+Chart.defaults.plugins.tooltip.backgroundColor='rgba(255,255,255,.97)';
+Chart.defaults.plugins.tooltip.borderColor='rgba(0,0,0,.1)';
+Chart.defaults.plugins.tooltip.borderWidth=1;
+Chart.defaults.plugins.tooltip.titleColor='#111';
+Chart.defaults.plugins.tooltip.bodyColor='#555';
+Chart.defaults.plugins.tooltip.padding=11;
+const CH={};
+function destroyC(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+
+function hBarC(id,labels,data,colors,th=16,fs=11){
+  destroyC(id);const el=document.getElementById(id);if(!el)return;
+  CH[id]=new Chart(el,{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:5,borderSkipped:false,barThickness:th}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${typeof ctx.raw==='number'&&ctx.raw>10?ctx.raw.toFixed(1)+'M':ctx.raw}`}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{color:'#999'}},y:{grid:{display:false},ticks:{color:'#666',font:{size:fs}}}},
+      animation:{duration:1100,easing:'easeOutQuart'}}});
+}
+function lineC(id,label,labels,data,color){
+  destroyC(id);const el=document.getElementById(id);if(!el)return;
+  CH[id]=new Chart(el,{type:'line',data:{labels,datasets:[{label,data,borderColor:color,backgroundColor:color+'18',borderWidth:2.5,pointBackgroundColor:color,pointRadius:6,pointHoverRadius:9,tension:.35,fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toFixed(1)}M views`}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#999'}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#999',callback:v=>v+'M'}}},
+      animation:{duration:900,easing:'easeInOutCubic'}}});
+}
+
+const SCOL={'Squid Game':'#E50914','Wednesday':'#9D4EDD','Stranger Things':'#00CFFF','Ms. Rachel':'#4CC9F0','Ginny & Georgia':'#FF6B6B','Peppa Pig':'#FF9FBF',"Gabby's Dollhouse":'#FFD93D','Young Sheldon':'#F97316','Masha and the Bear':'#A78BFA','The Night Agent':'#52B788','Alice in Borderland':'#EF4444','Breaking Bad':'#22C55E','CoComelon Lane':'#FF8FAB','My Life With the Walter Boys':'#F472B6','You':'#FF9F1C','XO, Kitty':'#F59E0B','Little Angel':'#60A5FA','Nobody Wants This':'#6BCB77','The Recruit':'#38BDF8','Bebefinn':'#FCD34D','Beauty in Black':'#CD853F','The Witcher':'#C084FC','PAW Patrol':'#34D399','The Sandman':'#94A3B8','Bridgerton':'#F472B6','Yellowstone':'#D97706','Brooklyn Nine-Nine':'#60A5FA','Lottie Dottie Chicken':'#FB923C','Demon Slayer: Kimetsu no Yaiba':'#F87171','American Manhunt':'#A3E635','Black Mirror':'#e8e8e8'};
+
+/* ══════════════════════════════════════════
+   MAIN BUILD
+══════════════════════════════════════════ */
+function buildAll(s200raw, p200raw, stotr, ptotr){
+  const S = [...s200raw].sort((a,b)=>(b.Views||0)-(a.Views||0));
+  const P = [...p200raw].sort((a,b)=>(b.Views||0)-(a.Views||0));
+  const stot=[...stotr].sort((a,b)=>(b.Views||0)-(a.Views||0));
+  const ptot=[...ptotr].sort((a,b)=>(b.Views||0)-(a.Views||0));
+
+  const ls=document.getElementById('ls');ls.classList.add('gone');
+  setTimeout(()=>{ls.style.display='none';initAOS();},900);
+
+  /* ── COUNTERS ── */
+  const pv=ptot.reduce((s,r)=>s+(r.Views||0),0);
+  const sv=stot.reduce((s,r)=>s+(r.Views||0),0);
+  function animC(id,target,dec=1){const el=document.getElementById(id);if(!el)return;let v=0;const inc=target/110;const t=setInterval(()=>{v=Math.min(v+inc,target);el.textContent=dec?v.toFixed(dec):Math.round(v).toLocaleString('es-ES');if(v>=target)clearInterval(t);},16);}
+  animC('c-pm',ptot.length,0);animC('c-sm',stot.length,0);
+  animC('c-pv',pv/1e9,1);animC('c-sv',sv/1e9,1);
+  document.getElementById('db-tv').textContent=((pv+sv)/1e9).toFixed(1)+'B';
+
+  /* ── KPOP BG ── */
+  const kbg=document.getElementById('kbg');
+  const p0=P[0];if(p0){const ph=imgH(p0)||imgV(p0);if(ph)kbg.style.backgroundImage=`url('${ph}')`;} 
+
+  /* ── TOP SERIES ── */
+  (function buildSeriesTopViz(){
+    const rows=S.slice(0,10);
+    const maxV=rows[0]?((rows[0].Views||0)/1e6):1;
+    const barsEl=document.getElementById('s-topviz-bars');
+    const heroBg=document.getElementById('s-hero-bg');
+    const heroInfo=document.getElementById('s-hero-info');
+    if(!barsEl)return;
+    barsEl.innerHTML=rows.map((r,i)=>{
+      const v=((r.Views||0)/1e6);
+      const pct=(v/maxV*100).toFixed(1);
+      const col=i===0?'var(--c)':'rgba(0,207,255,.55)';
+      return `<div class="tbar-row${i===0?' active':''}" data-idx="${i}"
+        data-img="${imgV(r)||imgH(r)}" data-imgv="${imgV(r)}"
+        data-title="${cleanT(r.Title)}" data-views="${v.toFixed(1)}"
+        data-sub="${r.Genre||''} · ${(r.Country||'').split('/')[0]} · ${r.Format||''}">
+        <div class="tbar-rk">${String(i+1).padStart(2,'0')}</div>
+        <div class="tbar-info">
+          <div class="tbar-title">${cleanT(r.Title)}</div>
+          <div class="tbar-bw"><div class="tbar-b" data-w="${pct}" style="background:${col};width:0"></div></div>
+        </div>
+        <div>
+          <div class="tbar-val" style="color:${col}">${v.toFixed(1)}M</div>
+          <div class="tbar-sub">views</div>
+        </div>
+      </div>`;
+    }).join('');
+    function setHero(el){
+      document.querySelectorAll('#s-topviz-bars .tbar-row').forEach(r=>r.classList.remove('active'));
+      el.classList.add('active');
+      const img=el.dataset.imgv||el.dataset.img;
+      if(img&&heroBg){heroBg.style.backgroundImage=`url('${img}')`;heroBg.style.opacity='1';}
+      if(heroInfo){
+        heroInfo.innerHTML=`
+          <div class="thi-rk">#${parseInt(el.dataset.idx)+1} · Top Series 2025</div>
+          <div class="thi-tt">${el.dataset.title}</div>
+          <div class="thi-vw" style="color:var(--c)">${el.dataset.views}M</div>
+          <div class="thi-sub">${el.dataset.sub}</div>`;
+      }
+    }
+    barsEl.querySelectorAll('.tbar-row').forEach(row=>{
+      row.addEventListener('mouseenter',()=>setHero(row));
+      row.addEventListener('click',()=>setHero(row));
+    });
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      barsEl.querySelectorAll('.tbar-b').forEach(b=>{b.style.width=b.dataset.w+'%';});
+      const first=barsEl.querySelector('.tbar-row');if(first)setHero(first);
+    }));
+  })();
+
+  /* ── TOP MOVIES (estructura espejo) ── */
+  (function buildMoviesTopViz(){
+    const rows=P.slice(0,10);
+    const maxV=(rows[0]?.Views||1)/1e6;
+    const barsEl=document.getElementById('m-topviz-bars');
+    const heroBg=document.getElementById('m-hero-bg');
+    const heroInfo=document.getElementById('m-hero-info');
+    if(!barsEl)return;
+    barsEl.innerHTML=rows.map((r,i)=>{
+      const v=(r.Views||0)/1e6;
+      const pct=(v/maxV*100).toFixed(1);
+      const col=i===0?'var(--g)':'var(--r)';
+      return `<div class="tbar-row${i===0?' active':''}" data-idx="${i}"
+        data-img="${imgV(r)||imgH(r)}" data-imgv="${imgV(r)}"
+        data-title="${cleanT(r.Title)}" data-views="${v>=100?v.toFixed(0):v.toFixed(1)}"
+        data-sub="${r.Genre||''} · ${(r.Country||'').split('/')[0]}">
+        <div class="tbar-rk" style="color:${col}">${String(i+1).padStart(2,'0')}</div>
+        <div class="tbar-info">
+          <div class="tbar-title">${cleanT(r.Title)}</div>
+          <div class="tbar-bw"><div class="tbar-b" data-w="${pct}" style="background:${col};width:0"></div></div>
+        </div>
+        <div>
+          <div class="tbar-val" style="color:${col}">${v>=100?v.toFixed(0):v.toFixed(1)}M</div>
+          <div class="tbar-sub">views</div>
+        </div>
+      </div>`;
+    }).join('');
+    function setHero(el){
+      document.querySelectorAll('#m-topviz-bars .tbar-row').forEach(r=>r.classList.remove('active'));
+      el.classList.add('active');
+      const img=el.dataset.imgv||el.dataset.img;
+      if(img&&heroBg){heroBg.style.backgroundImage=`url('${img}')`;heroBg.style.opacity='1';}
+      if(heroInfo){
+        const col=parseInt(el.dataset.idx)===0?'var(--g)':'var(--r)';
+        heroInfo.innerHTML=`
+          <div class="thi-rk">#${parseInt(el.dataset.idx)+1} · Top Películas 2025</div>
+          <div class="thi-tt">${el.dataset.title}</div>
+          <div class="thi-vw" style="color:${col}">${el.dataset.views}M</div>
+          <div class="thi-sub">${el.dataset.sub}</div>`;
+      }
+    }
+    barsEl.querySelectorAll('.tbar-row').forEach(row=>{
+      row.addEventListener('mouseenter',()=>setHero(row));
+      row.addEventListener('click',()=>setHero(row));
+    });
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      barsEl.querySelectorAll('.tbar-b').forEach(b=>{b.style.width=b.dataset.w+'%';});
+      const first=barsEl.querySelector('.tbar-row');if(first)setHero(first);
+    }));
+  })();
+
+  /* ── TREEMAP SAGAS — layout tipo infografía ── */
+  function buildTreemap(containerId, rows){
+    const el=document.getElementById(containerId);if(!el)return;
+    const map={};
+    rows.forEach(r=>{
+      const sg=String(r.Saga||'').trim();if(!sg||sg==='nan')return;
+      if(!map[sg])map[sg]={views:0,n:0,imgV:'',imgH:''};
+      map[sg].views+=(r.Views||0)/1e6;map[sg].n++;
+      // Store both orientations separately
+      if(!map[sg].imgV){const v=imgV(r);if(v&&v!=='nan')map[sg].imgV=v;}
+      if(!map[sg].imgH){const h=imgH(r);if(h&&h!=='nan')map[sg].imgH=h;}
+    });
+    const sorted=Object.entries(map).filter(([,v])=>v.n>1).sort((a,b)=>b[1].views-a[1].views).slice(0,10);
+    if(!sorted.length){el.innerHTML='<p style="color:#888;padding:2rem;font-size:.82rem">No hay sagas con múltiples entregas</p>';return;}
+
+    const GAP=3;
+    // Cap width at 500px so height = 750px (fits on screen), ratio 1:1.5
+    const W=Math.min(el.offsetWidth||el.parentElement.offsetWidth||900, 500);
+    const TOTAL_H=Math.round(W*1.5);
+
+    // Centre the treemap in its container
+    el.style.width=W+'px';
+    el.style.height=TOTAL_H+'px';
+    el.style.margin='0 auto';
+
+    const groups=[[sorted[0]]];
+    if(sorted.length>1)groups.push(sorted.slice(1,3));
+    if(sorted.length>3)groups.push(sorted.slice(3,6));
+    if(sorted.length>6)groups.push(sorted.slice(6,10));
+
+    const rowSums=groups.map(g=>g.reduce((s,[,d])=>s+d.views,0));
+    const totalSum=rowSums.reduce((a,b)=>a+b,0);
+    const totalGapV=GAP*(groups.length-1);
+    const rowHeights=rowSums.map(s=>Math.round((s/totalSum)*(TOTAL_H-totalGapV)));
+
+    function cell(name,data,cellW,cellH,heroRow){
+      // Choose image orientation based on cell aspect ratio
+      const isLandscape=cellW>=cellH;
+      const chosenImg=isLandscape
+        ?(data.imgH||data.imgV)
+        :(data.imgV||data.imgH);
+      const bgPos=isLandscape?'center center':'center top';
+      const fs=heroRow?'2.2rem':'1.25rem';
+      const fsn=heroRow?'1rem':'.76rem';
+      const fss=heroRow?'.6rem':'.5rem';
+      const pad=heroRow?'1.2rem 1.3rem':'.65rem .75rem';
+      const bgImg=chosenImg
+        ?`linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.28) 55%, transparent 100%), url('${chosenImg}')`
+        :`linear-gradient(135deg,#1a1a1a,#2d2d2d)`;
+      const flexVal=(cellW/W*100).toFixed(2);
+      return `<div style="flex:${flexVal} 0 0%;height:${cellH}px;background:${bgImg};background-size:cover;background-position:${bgPos};display:flex;flex-direction:column;justify-content:flex-end;padding:${pad};cursor:default;overflow:hidden;position:relative;transition:filter .22s" onmouseenter="this.style.filter='brightness(1.15)'" onmouseleave="this.style.filter=''">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${fs};line-height:1;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.95)">${data.views.toFixed(0)}M</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${fsn};color:rgba(255,255,255,.92);letter-spacing:.04em;text-shadow:0 1px 5px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+        <div style="font-size:${fss};color:rgba(255,255,255,.42);letter-spacing:.08em;text-transform:uppercase;margin-top:.15rem">${data.n} entregas</div>
+      </div>`;
+    }
+
+    el.style.display='flex';
+    el.style.flexDirection='column';
+    el.style.gap=GAP+'px';
+
+    el.innerHTML=groups.map((group,gi)=>{
+      const rowH=rowHeights[gi];
+      const rowSum=rowSums[gi];
+      const hero=gi===0;
+      // Estimate each cell's pixel width proportionally
+      const cells=group.map(([name,data])=>{
+        const cellW=Math.round((data.views/rowSum)*(W-(GAP*(group.length-1))));
+        return cell(name,data,cellW,rowH,hero);
+      }).join('');
+      return `<div style="display:flex;flex:0 0 ${rowH}px;height:${rowH}px;gap:${GAP}px">${cells}</div>`;
+    }).join('');
+  }
+  buildTreemap('treemap-movies',P);
+  buildTreemap('treemap-series',S);
+
+  /* ── COUNTRY RANKING ── */
+  (function buildCountryRank(){
+    const FLAGS={'USA':'🇺🇸','UK':'🇬🇧','South Korea':'🇰🇷','Japan':'🇯🇵','Spain':'🇪🇸','Brazil':'🇧🇷','France':'🇫🇷','Mexico':'🇲🇽','India':'🇮🇳','Germany':'🇩🇪','Australia':'🇦🇺','Canada':'🇨🇦','Italy':'🇮🇹','Turkey':'🇹🇷','Denmark':'🇩🇰','Sweden':'🇸🇪','Argentina':'🇦🇷','Norway':'🇳🇴','Thailand':'🇹🇭','Philippines':'🇵🇭','Colombia':'🇨🇴','Poland':'🇵🇱','Belgium':'🇧🇪','Netherlands':'🇳🇱','Finland':'🇫🇮','New Zealand':'🇳🇿','Nigeria':'🇳🇬','South Africa':'🇿🇦'};
+    const COLORS={'USA':'var(--r)','UK':'#4488ff','South Korea':'#ff6b9d','Japan':'#ff8c42','default':'#888'};
+    const cnt={};
+    [...S,...P].forEach(r=>{const co=(r.Country||'').split('/')[0].trim();if(co&&co!=='nan')cnt[co]=(cnt[co]||0)+1;});
+    const sorted=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const max=sorted[0][1];
+    const el=document.getElementById('wmap-rank');if(!el)return;
+    el.innerHTML=sorted.map(([name,count],i)=>{
+      const flag=FLAGS[name]||'🌐';
+      const col=COLORS[name]||COLORS.default;
+      const pct=(count/max*100).toFixed(1);
+      return `<div class="cri${i===0?' top1':''}">
+        <div class="cri-rk">${String(i+1).padStart(2,'0')}</div>
+        <div class="cri-flag">${flag}</div>
+        <div class="cri-info">
+          <div class="cri-name">${name}</div>
+          <div class="cri-bw"><div class="cri-b" data-w="${pct}" style="background:${col}"></div></div>
+        </div>
+        <div class="cri-nums">
+          <div class="cri-count" style="color:${col}">${count}</div>
+          <div class="cri-sub">títulos</div>
+        </div>
+      </div>`;
+    }).join('');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.querySelectorAll('.cri-b').forEach(b=>{b.style.width=b.dataset.w+'%';});
+    }));
+  })();
+  
+  /* ── WORLD MAP ── */
+  (function buildMap(){
+    const allC={};
+    [...S,...P].forEach(r=>{
+      let co=(r.Country||'').split('/')[0].trim();
+      if(co==='USA')co='United States';else if(co==='UK')co='United Kingdom';
+      if(co&&co!=='nan')allC[co]=(allC[co]||0)+1;
+    });
+    if(typeof Plotly==='undefined')return;
+    Plotly.newPlot('wmap',[{type:'choropleth',locationmode:'country names',
+      locations:Object.keys(allC),z:Object.values(allC),
+      colorscale:[[0,'#f8f8f8'],[.03,'#ffd5d5'],[.12,'#ff9999'],[.3,'#cc2222'],[.65,'#990000'],[1,'#E50914']],
+      zmin:0,marker:{line:{color:'rgba(200,200,200,.4)',width:.5}},
+      colorbar:{title:'Títulos',tickfont:{color:'#888',size:9},bgcolor:'rgba(255,255,255,.9)',bordercolor:'rgba(0,0,0,.1)'}
+    }],{
+      geo:{bgcolor:'transparent',showcoastlines:false,showland:true,landcolor:'#f0f0f0',showframe:false,
+        projection:{type:'natural earth'},showcountries:true,countrycolor:'rgba(0,0,0,.1)'},
+      paper_bgcolor:'transparent',plot_bgcolor:'transparent',margin:{t:0,b:0,l:0,r:0}
+    },{displayModeBar:false,responsive:true});
+  })();
+
+  /* ── GENRES ── */
+  function genreCounts(rows){const m={};rows.forEach(r=>{const g=(r.Genre||'').split('/')[0].trim();if(g&&g!=='nan')m[g]=(m[g]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+  function genreRepImg(rows,genre){const r=rows.find(x=>(x.Genre||'').split('/')[0].trim()===genre&&imgV(x));return r?imgV(r):'';}
+  function buildGenreBars(containerId, rows, colorFn){
+    const el=document.getElementById(containerId);if(!el)return;
+    const data=genreCounts(rows).slice(0,8);
+    const max=data[0][1];
+    el.innerHTML=data.map(([name,count],i)=>{
+      const img=genreRepImg(rows,name);
+      const col=colorFn(i);
+      const pct=(count/max*100).toFixed(1);
+      return `<div class="gbi">
+        ${img?`<div class="gbi-bg" style="background-image:url('${img}')"></div><img class="gbi-thumb" src="${img}" onerror="this.style.display='none'" loading="lazy">`:`<div class="gbi-nothumb"></div>`}
+        <div class="gbi-info">
+          <div class="gbi-name">${name}</div>
+          <div class="gbi-bw"><div class="gbi-b" data-w="${pct}" style="background:${col}"></div></div>
+        </div>
+        <div class="gbi-right">
+          <div class="gbi-count" style="color:${col}">${count}</div>
+          <div class="gbi-lbl">títulos</div>
+        </div>
+      </div>`;
+    }).join('');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.querySelectorAll('.gbi-b').forEach(b=>{b.style.width=b.dataset.w+'%';});
+    }));
+  }
+  buildGenreBars('g-s-bars',S,i=>`hsl(195,${80-i*4}%,${65-i*3}%)`);
+  buildGenreBars('g-m-bars',P,i=>`hsl(0,${80-i*4}%,${58-i*2}%)`);
+
+  /* ── WAFFLE ── */
+  const wfl=document.getElementById('wfl');const wt=document.getElementById('wt');
+  const pSorted=[...P].sort((a,b)=>Number(isAnim(b))-Number(isAnim(a)));
+  wfl.innerHTML=pSorted.map((r,i)=>{
+    const a=isAnim(r);const iv=imgV(r);
+    return `<div class="wc ${a?'a':'na'}" data-t="${cleanT(r.Title)}" data-v="${((r.Views||0)/1e6).toFixed(1)}" data-i="${iv}" data-ih="${imgH(r)}" data-g="${r.Genre||''}" data-a="${a}" data-co="${(r.Country||'').split('/')[0]}" data-sg="${(r.Saga||'').trim()}" data-rk="${i+1}"></div>`;
+  }).join('');
+  wfl.querySelectorAll('.wc').forEach(c=>{
+    c.addEventListener('mouseenter',()=>{
+      const a=c.dataset.a==='true';const iv=c.dataset.i;
+      const ih=c.dataset.ih;const sg=c.dataset.sg;const co=c.dataset.co;const rk=c.dataset.rk;
+      wt.innerHTML=`
+        ${ih?`<img src="${ih}" style="width:100%;height:160px;object-fit:cover;border-radius:10px 10px 0 0;flex-shrink:0" onerror="this.style.display='none'">`:
+          `<div style="width:100%;height:100px;background:${a?'rgba(229,9,20,.08)':'rgba(128,128,128,.1)'};border-radius:10px 10px 0 0;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+             <span style="font-size:2rem">${a?'🎬':'🎥'}</span></div>`}
+        <div style="padding:.9rem 1rem">
+          <div style="font-size:.58rem;color:${a?'var(--r)':'var(--text3)'};letter-spacing:.14em;text-transform:uppercase;margin-bottom:.3rem;font-weight:700">${a?'🎨 Animación':'📽 Acción Real'} · #${rk}</div>
+          <div style="font-size:.85rem;font-weight:700;color:var(--text);line-height:1.25;margin-bottom:.4rem">${c.dataset.t}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:${a?'var(--r)':'var(--text)'};line-height:1;margin-bottom:.3rem">${c.dataset.v}M <span style="font-size:.8rem;color:var(--text3);font-family:'DM Sans',sans-serif">views</span></div>
+          <div style="font-size:.68rem;color:var(--text3);line-height:1.6">${c.dataset.g}${co?' · '+co:''}${sg&&sg!=='nan'?' · '+sg:''}</div>
+        </div>`;
+    });
+  });
+
+  /* ── SPAIN ── */
+  const spM=P.filter(r=>(r.Country||'').includes('Spain'));
+  const spS=S.filter(r=>(r.Country||'').includes('Spain'));
+  
+  const podEl=document.getElementById('sp-podium');
+  if(podEl){
+    if(spM.length){
+      const medals=['gold','silver','bronze'];
+      const medalIco=['🥇','🥈','🥉'];
+      podEl.innerHTML=spM.slice(0,3).map((r,i)=>{
+        const iv=imgV(r);
+        const v=((r.Views||0)/1e6).toFixed(1);
+        return `<div class="sp-pod-item ${medals[i]||''}">
+          <div class="sp-pod-medal">${medalIco[i]||''}</div>
+          <div class="sp-pod-card">
+            ${iv?`<div class="sp-pod-bg" style="background-image:url('${iv}')"></div>`:'<div class="sp-pod-bg" style="background:linear-gradient(135deg,#1a0a00,#3d1500)"></div>'}
+            <div class="sp-pod-ov">
+              <div style="font-size:.58rem;color:var(--sp);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.15rem">${r.Genre||''}</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.15rem;color:#fff;line-height:1.1;margin-bottom:.25rem">${cleanT(r.Title)}</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--sp);line-height:1">${v}M</div>
+            </div>
+          </div>
+          <div class="sp-pod-step"><span style="font-size:.6rem;letter-spacing:.1em;color:var(--text3)">#${i+1}</span></div>
+        </div>`;
+      }).join('');
+    }
+  }
+  
+  const spSbarEl=document.getElementById('sp-sbar');
+  if(spSbarEl&&spS.length){
+    const maxV=(spS[0]?.Views||1)/1e6;
+    spSbarEl.innerHTML=spS.map((r,i)=>{
+      const v=((r.Views||0)/1e6);
+      const pct=(v/maxV*100).toFixed(1);
+      const iv=imgV(r);
+      return `<div class="sp-sbar-row">
+        ${iv?`<img src="${iv}" loading="lazy" style="width:40px;height:60px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid rgba(0,0,0,.1)" onerror="this.style.display='none'">`:`<div style="width:40px;height:60px;border-radius:6px;background:rgba(255,107,53,.1);flex-shrink:0"></div>`}
+        <div class="sp-sbar-info">
+          <div class="sp-sbar-title">${cleanT(r.Title)}</div>
+          <div style="font-size:.7rem;color:var(--text3);margin-bottom:.25rem">${r.Genre||''}</div>
+          <div class="sp-sbar-bw"><div class="sp-sbar-b" data-w="${pct}" style="width:0"></div></div>
+        </div>
+        <div class="sp-sbar-val">${v.toFixed(1)}M</div>
+      </div>`;
+    }).join('');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      spSbarEl.querySelectorAll('.sp-sbar-b').forEach(b=>{b.style.width=b.dataset.w+'%';});
+    }));
+  }
+  
+  /* Casa de Papel — Gráfico de LÍNEAS con puntos */
+  (function buildCasaDePapel(){
+    const cdp=stot.filter(r=>(r.Title||'').toLowerCase().includes('casa de papel')).sort((a,b)=>{
+      const ma=(a.Title||'').match(/season\s*(\d+)|temporada\s*(\d+)|\bs(\d+)\b/i);
+      const mb=(b.Title||'').match(/season\s*(\d+)|temporada\s*(\d+)|\bs(\d+)\b/i);
+      const na=ma?parseInt(ma[1]||ma[2]||ma[3]):99;
+      const nb=mb?parseInt(mb[1]||mb[2]||mb[3]):99;
+      return na-nb;
+    });
+    if(!cdp.length)return;
+    const labels=cdp.map(r=>{
+      const m=(r.Title||'').match(/season\s*(\d+)/i);
+      return m?'T'+m[1]:cleanT(r.Title||'');
+    });
+    const data=cdp.map(r=>(r.Views||0)/1e6);
+    const el=document.getElementById('c-cdp');if(!el)return;
+    destroyC('c-cdp');
+    CH['c-cdp']=new Chart(el,{type:'line',
+      data:{labels,datasets:[{
+        data,
+        borderColor:'var(--r)',
+        backgroundColor:'rgba(229,9,20,.1)',
+        borderWidth:3,
+        pointBackgroundColor:'var(--r)',
+        pointBorderColor:'#fff',
+        pointBorderWidth:2,
+        pointRadius:6,
+        pointHoverRadius:9,
+        tension:.3,
+        fill:true
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toFixed(1)}M views`}}},
+        scales:{
+          x:{grid:{display:false},ticks:{color:'#999',font:{size:11}}},
+          y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{color:'#aaa',callback:v=>v+'M',font:{size:10}},beginAtZero:true}
+        },
+        animation:{duration:1200,easing:'easeOutQuart'}}});
+  })();
+
+  /* ── SEASONS ── */
+  let SEAS={};
+  (function buildSeasData(){
+    const sagaByTitle={};
+    S.forEach(r=>{
+      const sg=String(r.Saga||'').trim();
+      const ct=cleanT(r.Title);
+      if(sg&&sg!=='nan'){sagaByTitle[ct]=sg;sagaByTitle[r.Title]=sg;}
+    });
+    ['Black Mirror: Season 1','Black Mirror: Season 2','Black Mirror: Season 3','Black Mirror: Season 4','Black Mirror: Season 5','Black Mirror: Season 6','Black Mirror: Season 7'].forEach(t=>{
+      sagaByTitle[t]='Black Mirror';sagaByTitle[cleanT(t)]='Black Mirror';
+    });
+    const groups={};
+    stot.forEach(r=>{
+      const title=String(r.Title||'');
+      const ct=cleanT(title);
+      const sg=sagaByTitle[title]||sagaByTitle[ct]||'';
+      if(!sg)return;
+      let seas=1;
+      const m1=title.match(/Season\s*(\d+)/i);if(m1)seas=parseInt(m1[1]);
+      else{const m2=title.split(' //')[0].trim().match(/\b(\d+)\s*$/);if(m2)seas=parseInt(m2[1]);}
+      if(!groups[sg])groups[sg]=[];
+      if(!groups[sg].find(x=>x.s===seas))
+        groups[sg].push({s:seas,v:(r.Views||0)/1e6});
+    });
+    Object.entries(groups).forEach(([k,arr])=>{
+      if(arr.length>=2){
+        const sorted=arr.sort((a,b)=>a.s-b.s);
+        SEAS[k]={ls:sorted.map(x=>'T'+x.s),d:sorted.map(x=>parseFloat(x.v.toFixed(1)))};
+      }
+    });
+    if(!SEAS['Black Mirror']||SEAS['Black Mirror'].d.length<5)
+      SEAS['Black Mirror']={ls:['T1','T2','T3','T4','T5','T6','T7'],d:[9.2,6.3,5.6,5.5,5.2,7.8,36.3]};
+  })();
+
+  let activeSea='Squid Game';
+  function buildSeaBtns(wid,cid,sid){
+    const w=document.getElementById(wid);if(!w)return;
+    w.innerHTML=Object.keys(SEAS).map(k=>{
+      const col=SCOL[k]||'#777';const on=k===activeSea;
+      return `<button class="sbtn${on?' on':''}" style="${on?`color:${col};border-color:${col}`:''}" onclick="selSea('${k.replace(/'/g,"\\'")}','${wid}','${cid}','${sid}')">${k}</button>`;
+    }).join('');
+  }
+  window.selSea=function(key,wid,cid,sid){
+    activeSea=key;const d=SEAS[key];if(!d)return;
+    const col=SCOL[key]||'#777';
+    lineC(cid,key,d.ls,d.d,col);
+    buildSeaBtns(wid,cid,sid);
+    if(sid&&sid!=='null'){
+      const el=document.getElementById(sid);if(!el)return;
+      const max=Math.max(...d.d),mi=d.d.indexOf(max);
+      const last=d.d[d.d.length-1],prev=d.d.length>1?d.d[d.d.length-2]:null;
+      const ch=prev!==null?((last-prev)/prev*100).toFixed(0):null;
+      el.innerHTML=`<div style="display:flex;gap:1.5rem;flex-wrap:wrap">
+        <div><div style="font-size:.58rem;color:var(--text);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.2rem">Temporada más vista</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.55rem;color:${col}">${d.ls[mi]} · ${max.toFixed(1)}M</div></div>
+        ${ch!==null?`<div><div style="font-size:.58rem;color:var(--text);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.2rem">Última vs anterior</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.55rem;color:${last>=prev?'var(--gr)':'var(--r)'}">${last>=prev?'+':''}${ch}%</div></div>`:''}
+        <div style="flex:1;min-width:100px"><div style="font-size:.58rem;color:var(--text);letter-spacing:.14em;text-transform:uppercase;margin-bottom:.18rem">Temporadas en datos</div><p style="font-size:.78rem;color:var(--text2)">${d.ls.length} en el catálogo</p></div>
+      </div>`;
+    }
+  };
+  buildSeaBtns('sb1','c-sea','ss1');
+  buildSeaBtns('sb2','c-sea2','null');
+  selSea('Squid Game','sb1','c-sea','ss1');
+  selSea('Squid Game','sb2','c-sea2','null');
+
+  lineC('c-bm','Black Mirror',['T1','T2','T3','T4','T5','T6','T7'],[9.2,6.3,5.6,5.5,5.2,7.8,36.3],'#e8e8e8');
+
+  /* ── KIDS ── */
+  const kids=[
+    {name:"Peppa Pig",col:'#FF9FBF'},{name:"Gabby's Dollhouse",col:'#FFD93D'},
+    {name:'Ms. Rachel',col:'#4CC9F0'},{name:'Lottie Dottie Chicken',col:'#FB923C'},
+    {name:'Masha and the Bear',col:'#A78BFA'},{name:'CoComelon Lane',col:'#FF8FAB'},{name:'Little Angel',col:'#60A5FA'},
+    {name:'Bebefinn',col:'#FCD34D'},
+  ];
+  const sagaMap={};S.forEach(r=>{const sg=String(r.Saga||'').trim();if(sg&&sg!=='nan')sagaMap[sg]=(sagaMap[sg]||0)+(r.Views||0)/1e6;});
+  const kv=kids.map(k=>sagaMap[k.name]||0);
+  const kmx=Math.max(...kv);
+  const kgEl=document.getElementById('kids-grid');
+  if(kgEl){
+    kgEl.innerHTML=kids.map((k,i)=>{
+      const v=kv[i];const pct=(v/kmx*100).toFixed(0);
+      return `<div class="kids-card">
+        <div class="kids-card-name">${k.name}</div>
+        <div class="kids-card-bar-wrap"><div class="kids-card-bar" data-w="${pct}" style="background:${k.col};width:0"></div></div>
+        <div class="kids-card-val" style="color:${k.col}">${v.toFixed(0)}M</div>
+        <div class="kids-card-sub">visualizaciones</div>
+      </div>`;
+    }).join('');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      kgEl.querySelectorAll('.kids-card-bar').forEach(b=>{b.style.width=b.dataset.w+'%';});
+    }));
+  }
+
+  /* ── PODIO ── */
+  const podio=document.getElementById('podio');
+  [{rk:'01',t:'KPop Demon Hunters',v:'518M',col:'var(--g)',sub:'Película · USA · Animación Musical',pct:100,img:imgH(P[0])||imgV(P[0])},
+   {rk:'02',t:'Adolescence',v:'165M',col:'var(--c)',sub:'Limited Series · Reino Unido · Drama',pct:32,img:imgH(S[0])||imgV(S[0])},
+   {rk:'03',t:'Squid Game S3',v:'150M',col:'var(--r)',sub:'Serie · Corea del Sur · Thriller',pct:29,img:imgH(S[1])||imgV(S[1])}
+  ].forEach(p=>{
+    const d=document.createElement('div');d.className='pod';d.style.borderLeft=`3px solid ${p.col}`;
+    d.innerHTML=`<div class="podb" style="${p.img?`background-image:url('${p.img}')`:''};background-color:#0d0d0d"></div>
+    <div class="podc">
+      <div class="prk2" style="color:${p.col}">${p.rk}</div>
+      <div style="flex:1">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:#fff;line-height:1;margin-bottom:.3rem">${p.t}</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:.6rem">${p.sub}</div>
+        <div class="pbar" style="width:${p.pct}%;background:${p.col}"></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:3.2rem;color:${p.col};line-height:1">${p.v}</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase">visualizaciones</div>
+      </div>
+    </div>`;
+    podio.appendChild(d);
+  });
+
+  /* ── SEARCH ── */
+  const SDB=[
+    ...ptot.map(r=>({t:r.Title||'',tp:'P',v:(r.Views||0)/1e6,h:r['Hours Viewed']||0})),
+    ...stot.map(r=>({t:cleanT(r.Title||''),tp:'S',v:(r.Views||0)/1e6,h:r['Hours Viewed']||0}))
+  ].filter(r=>r.v>0).sort((a,b)=>b.v-a.v);
+  function renderSearch(res,tbid,infoid,max=120){
+    const tb=document.getElementById(tbid);const info=document.getElementById(infoid);if(!tb)return;
+    const sl=res.slice(0,max);
+    tb.innerHTML=sl.map(r=>`<tr><td style="font-weight:500;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t}</td><td><span class="bm ${r.tp==='P'?'bmp':'bms'}">${r.tp==='P'?'Película':'Serie'}</span></td><td style="text-align:right;font-weight:700">${r.v.toFixed(2)}M</td><td style="text-align:right;color:var(--text2)">${fmtH(r.h)}</td></tr>`).join('');
+    if(info)info.textContent=`${sl.length} de ${res.length} resultados`;
+  }
+  function bindSearch(inputId,tbid,infoid){
+    const inp=document.getElementById(inputId);if(!inp)return;
+    let timer;inp.addEventListener('input',()=>{
+      clearTimeout(timer);timer=setTimeout(()=>{const q=inp.value.toLowerCase().trim();
+        renderSearch(q?SDB.filter(r=>r.t.toLowerCase().includes(q)):SDB,tbid,infoid);},180);
+    });
+  }
+  renderSearch(SDB,'s-body','s-info');
+  renderSearch(SDB,'sd-body','sd-info');
+  bindSearch('s-in','s-body','s-info');
+  bindSearch('sd-in','sd-body','sd-info');
+
+  /* ── DASHBOARD ── */
+  let DF={c:'all',g:'all',a:'all',f:'all'};
+  (function buildFilters(){
+    const cs=['USA','UK','South Korea','Spain','Japan','France','Brazil','Mexico'];
+    const gs=['Drama','Kids','Thriller','Comedy','Sci-Fi','Action','Romance','Family','Documentary','Anime'];
+    const btn=(key,val,lbl)=>`<button class="fp${val==='all'?' on':''}" onclick="setF('${key}','${val}',this)">${lbl}</button>`;
+    document.getElementById('f-c').innerHTML=btn('c','all','Todos')+cs.map(x=>btn('c',x,x)).join('');
+    document.getElementById('f-g').innerHTML=btn('g','all','Todos')+gs.map(x=>btn('g',x,x)).join('');
+    document.getElementById('f-a').innerHTML=btn('a','all','Todos')+'<button class="fp" onclick="setF(\'a\',\'yes\',this)">Animación</button><button class="fp" onclick="setF(\'a\',\'no\',this)">Acción Real</button>';
+    document.getElementById('f-f').innerHTML=btn('f','all','Todos')+'<button class="fp" onclick="setF(\'f\',\'Series\',this)">Series</button><button class="fp" onclick="setF(\'f\',\'Limited Series\',this)">Limited Series</button>';
+  })();
+  window.setF=function(k,v,b){DF[k]=v;b.parentElement.querySelectorAll('.fp').forEach(p=>p.classList.remove('on'));b.classList.add('on');applyF();};
+  window.rF=function(){DF={c:'all',g:'all',a:'all',f:'all'};document.querySelectorAll('.fr').forEach(row=>row.querySelectorAll('.fp').forEach((p,i)=>p.classList.toggle('on',i===0)));applyF();};
+  function applyF(){
+    const fS=S.filter(r=>{
+      if(DF.c!=='all'&&!(r.Country||'').includes(DF.c))return false;
+      if(DF.g!=='all'&&!(r.Genre||'').includes(DF.g))return false;
+      if(DF.f!=='all'&&r.Format!==DF.f)return false;
+      return true;
+    }).sort((a,b)=>(b.Views||0)-(a.Views||0));
+    const fP=P.filter(r=>{
+      if(DF.c!=='all'&&!(r.Country||'').includes(DF.c))return false;
+      if(DF.g!=='all'&&!(r.Genre||'').includes(DF.g))return false;
+      if(DF.a==='yes'&&!isAnim(r))return false;if(DF.a==='no'&&isAnim(r))return false;
+      return true;
+    }).sort((a,b)=>(b.Views||0)-(a.Views||0));
+
+    if(fP[0]){document.getElementById('db-mv').textContent=((fP[0].Views||0)/1e6).toFixed(0)+'M';document.getElementById('db-mt').textContent=cleanT(fP[0].Title);}
+    if(fS[0]){document.getElementById('db-sv').textContent=((fS[0].Views||0)/1e6).toFixed(0)+'M';document.getElementById('db-st').textContent=cleanT(fS[0].Title);}
+    document.getElementById('db-ft').textContent=(fS.length+fP.length).toString();
+
+    // ── TOP SERIES ranking list ──
+    const maxVS=(fS[0]?.Views||1)/1e6;
+    document.getElementById('db-ls').innerHTML=fS.slice(0,12).map((r,i)=>{
+      const v=(r.Views||0)/1e6;
+      return `<div class="dli">
+        <div class="dlr">${i+1}</div>
+        <div class="dlbw">
+          <div class="dlt">${cleanT(r.Title).substring(0,38)}</div>
+          <div class="dlb" style="width:${v/maxVS*100}%;background:var(--c)"></div>
+        </div>
+        <div class="dlv" style="color:var(--c)">${v.toFixed(1)}M</div>
+      </div>`;
+    }).join('');
+
+    // ── TOP PELÍCULAS ranking list ──
+    const maxVP=(fP[0]?.Views||1)/1e6;
+    const pmEl=document.getElementById('db-pm-rank');
+    if(pmEl) pmEl.innerHTML=fP.slice(0,12).map((r,i)=>{
+      const v=(r.Views||0)/1e6;
+      return `<div class="dli">
+        <div class="dlr">${i+1}</div>
+        <div class="dlbw">
+          <div class="dlt">${cleanT(r.Title).substring(0,38)}</div>
+          <div class="dlb" style="width:${v/maxVP*100}%;background:var(--r)"></div>
+        </div>
+        <div class="dlv" style="color:var(--r)">${v.toFixed(1)}M</div>
+      </div>`;
+    }).join('');
+
+    // ── PAÍSES & GÉNEROS (bar charts) ──
+    function cnt(rows,field){const m={};rows.forEach(r=>{const v=(r[field]||'').split('/')[0].trim();if(v&&v!=='nan')m[v]=(m[v]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+    const cs=cnt(fS,'Country').slice(0,8);hBarC('db-cs',cs.map(x=>x[0]),cs.map(x=>x[1]),cs.map((_,i)=>i===0?'#00CFFF':'#00CFFF44'),12,10);
+    const gs2=cnt(fS,'Genre').slice(0,7);hBarC('db-gs',gs2.map(x=>x[0]),gs2.map(x=>x[1]),gs2.map((_,i)=>`hsl(195,${78-i*7}%,${55-i*4}%)`),12,10);
+    const gm2=cnt(fP,'Genre').slice(0,7);hBarC('db-gm',gm2.map(x=>x[0]),gm2.map(x=>x[1]),gm2.map((_,i)=>`hsl(0,${78-i*7}%,${52-i*3}%)`),12,10);
+
+    // ── SAGAS (bar charts) ──
+    function sagaTotals(rows){const m={};rows.forEach(r=>{const sg=String(r.Saga||'').trim();if(sg&&sg!=='nan')m[sg]=(m[sg]||0)+(r.Views||0)/1e6;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+    const ss=sagaTotals(fS).slice(0,8);hBarC('db-ss',ss.map(x=>x[0].substring(0,22)),ss.map(x=>x[1]),ss.map((_,i)=>i===0?'#00CFFF':'#00CFFF55'),13,10);
+    const sm=sagaTotals(fP).slice(0,8);hBarC('db-sm',sm.map(x=>x[0].substring(0,22)),sm.map(x=>x[1]),sm.map((_,i)=>i===0?'#E50914':'#E5091455'),13,10);
+  }
+  applyF();
+}
+
+/* ══════════════════════════════════════════
+   LOAD CSVs
+══════════════════════════════════════════ */
+async function load(){
+  try {
+    document.getElementById('lt').textContent = 'Cargando datos…';
+    const [s200,p200,stot,ptot] = await Promise.all([
+      parseCSV(CSV_FILES.s200),
+      parseCSV(CSV_FILES.p200),
+      parseCSV(CSV_FILES.stot),
+      parseCSV(CSV_FILES.ptot)
+    ]);
+    buildAll(s200, p200, stot, ptot);
+  } catch(e) {
+    document.getElementById('lt').textContent = 'Coloca los 4 CSV junto al HTML, o súbelos aquí:';
+    document.getElementById('uu').classList.add('on');
+  }
+}
+
+document.getElementById('cfi').addEventListener('change', async e => {
+  const files = Array.from(e.target.files);
+  const msg = document.getElementById('um');
+  try {
+    const get = k => files.find(f => f.name.toLowerCase().includes(k.toLowerCase()));
+    const fs200 = get('TOP_200_SERIES');
+    const fp200 = get('TOP_200_PELIS');
+    const fstot = get('Series_Netflix');
+    const fptot = get('Pelis_Netflix');
+    if(!fs200||!fp200||!fstot||!fptot) throw new Error('Faltan archivos. Necesito los 4 CSV.');
+    msg.textContent = 'Procesando…';
+    const [s200,p200,stot,ptot] = await Promise.all([parseFile(fs200),parseFile(fp200),parseFile(fstot),parseFile(fptot)]);
+    buildAll(s200, p200, stot, ptot);
+  } catch(err) { msg.textContent = err.message; }
+});
+
+window.addEventListener('load', load);
+</script>
+</body>
+</html>
